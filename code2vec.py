@@ -35,4 +35,7 @@ if __name__ == '__main__':
     if config.PREDICT:
         predictor = InteractivePredictor(config, model)
         predictor.predict()
+    if config.PREDICTDIR != None:
+        predictor = InteractivePredictor(config, model)
+        predictor.predict_dir(config.PREDICTDIR)
     model.close_session()

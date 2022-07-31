@@ -1,4 +1,5 @@
 import traceback
+import os 
 
 from common import common
 from extractor import Extractor
@@ -40,7 +41,12 @@ class InteractivePredictor:
             except ValueError as e:
                 print(e)
                 continue
+
+            # PDEB
+            print(predict_lines)
             raw_prediction_results = self.model.predict(predict_lines)
+            # PDEB
+            print(raw_prediction_results)
             method_prediction_results = common.parse_prediction_results(
                 raw_prediction_results, hash_to_string_dict,
                 self.model.vocabs.target_vocab.special_words, topk=SHOW_TOP_CONTEXTS)
@@ -55,3 +61,48 @@ class InteractivePredictor:
                 if self.config.EXPORT_CODE_VECTORS:
                     print('Code vector:')
                     print(' '.join(map(str, raw_prediction.code_vector)))
+
+
+    def predict_dir(self, dir_path):
+        print('Starting directory prediction...')
+        
+        for dirpath, dirnames, filenames in os.walk(dir_path):
+            for filename in filenames:
+                if not filename.endswith(".java"):
+                    print("Skipping:" + filename)
+                    continue
+                
+                try:
+                    predict_lines, hash_to_string_dict = self.path_extractor.extract_paths(os.path.join(dirpath, filename))
+                except ValueError as e:
+                    print(e)
+                    continue
+
+                # PDEB
+                #print(predict_lines)
+                
+                raw_prediction_results = self.model.predict(predict_lines)
+                # PDEB
+                #print(raw_prediction_results)
+                print("------------------------------")
+                print("Dirname: " + dirpath)
+                print("Filename: " + filename)
+
+                method_prediction_results = common.parse_prediction_results(
+                    raw_prediction_results, hash_to_string_dict,
+                    self.model.vocabs.target_vocab.special_words, topk=SHOW_TOP_CONTEXTS)
+                for raw_prediction, method_prediction in zip(raw_prediction_results, method_prediction_results):
+                    # in predict dir we are interested in code vector
+                    if self.config.VERBOSE_MODE > 1:
+                        print('Original name:\t' + method_prediction.original_name)
+                        for name_prob_pair in method_prediction.predictions:
+                            print('\t(%f) predicted: %s' % (name_prob_pair['probability'], name_prob_pair['name']))
+                        print('Attention:')
+                        for attention_obj in method_prediction.attention_paths:
+                            print('%f\tcontext: %s,%s,%s' % (
+                            attention_obj['score'], attention_obj['token1'], attention_obj['path'], attention_obj['token2']))
+                    if self.config.EXPORT_CODE_VECTORS:
+                        print('Code vector:')
+                        print(' '.join(map(str, raw_prediction.code_vector)))
+
+        print("------------------------------")
