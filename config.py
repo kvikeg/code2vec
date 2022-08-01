@@ -43,6 +43,8 @@ class Config:
                             help='use tensorboard during training')
         parser.add_argument('--predictdir', dest='predictdir',
                             help='execute the prediction on a given dir')
+        parser.add_argument('--only_code_vectors', action='store_true', required=False,
+                            help='print only code vector')
         return parser
 
     def set_defaults(self):
@@ -88,6 +90,7 @@ class Config:
         self.DL_FRAMEWORK = 'tensorflow' if not args.dl_framework else args.dl_framework
         self.USE_TENSORBOARD = args.use_tensorboard
         self.PREDICTDIR = args.predictdir
+        self.ONLY_CODE_VECTORS = args.only_code_vectors
 
     def __init__(self, set_defaults: bool = False, load_from_args: bool = False, verify: bool = False):
         self.NUM_TRAIN_EPOCHS: int = 0
@@ -130,6 +133,7 @@ class Config:
         self.DL_FRAMEWORK: str = ''  # in {'keras', 'tensorflow'}
         self.USE_TENSORBOARD: bool = False
         self.PREDICTDIR: Optional[str] = None
+        self.ONLY_CODE_VECTORS: bool = False
 
         # Automatically filled by `Code2VecModelBase._init_num_of_examples()`.
         self.NUM_TRAIN_EXAMPLES: int = 0

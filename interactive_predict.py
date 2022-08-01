@@ -43,21 +43,22 @@ class InteractivePredictor:
                 continue
 
             # PDEB
-            print(predict_lines)
+            # print(predict_lines)
             raw_prediction_results = self.model.predict(predict_lines)
             # PDEB
-            print(raw_prediction_results)
+            # print(raw_prediction_results)
             method_prediction_results = common.parse_prediction_results(
                 raw_prediction_results, hash_to_string_dict,
                 self.model.vocabs.target_vocab.special_words, topk=SHOW_TOP_CONTEXTS)
             for raw_prediction, method_prediction in zip(raw_prediction_results, method_prediction_results):
                 print('Original name:\t' + method_prediction.original_name)
-                for name_prob_pair in method_prediction.predictions:
-                    print('\t(%f) predicted: %s' % (name_prob_pair['probability'], name_prob_pair['name']))
-                print('Attention:')
-                for attention_obj in method_prediction.attention_paths:
-                    print('%f\tcontext: %s,%s,%s' % (
-                    attention_obj['score'], attention_obj['token1'], attention_obj['path'], attention_obj['token2']))
+                if not self.config.ONLY_CODE_VECTORS:
+                    for name_prob_pair in method_prediction.predictions:
+                        print('\t(%f) predicted: %s' % (name_prob_pair['probability'], name_prob_pair['name']))
+                    print('Attention:')
+                    for attention_obj in method_prediction.attention_paths:
+                        print('%f\tcontext: %s,%s,%s' % (
+                        attention_obj['score'], attention_obj['token1'], attention_obj['path'], attention_obj['token2']))
                 if self.config.EXPORT_CODE_VECTORS:
                     print('Code vector:')
                     print(' '.join(map(str, raw_prediction.code_vector)))
